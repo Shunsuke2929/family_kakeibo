@@ -1,0 +1,52 @@
+# Local configuration
+.env
+.env.*
+!.env.example
+
+src/js/config.js
+src/js/config.local.js
+src/js/config.private.js
+
+# Certificates & Credentials
+*.pem
+*.p12
+*.key
+*service-account*.json
+*credentials*.json
+*token*.json
+
+# Dependencies & Virtualenvs
+node_modules/
+.venv/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+
+# System files
+Thumbs.db
+.DS_Store
+
+# Output, backups & assets
+exports/
+backups/
+receipts/
+receipt-assets/
+tmp/
+outputs/
+*.zip
+*.xlsx
+*.csv
+*.pdf
+*.png
+*.jpg
+*.jpeg
+*.log
+*.bin
+*.lock
+
+# Build configuration
+android/local.properties
+android/.gradle/
+android/app/build/
+android/.idea/
+android/*.iml

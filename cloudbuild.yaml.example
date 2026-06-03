@@ -1,0 +1,38 @@
+steps:
+  # Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/kakeibo-web'
+      - '.'
+
+  # Push the container image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/kakeibo-web'
+
+  # Deploy container image to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'kakeibo-web'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/kakeibo-web'
+      - '--region'
+      - 'YOUR_GCP_REGION' # e.g., asia-northeast1
+      - '--platform'
+      - 'managed'
+      - '--update-env-vars'
+      - '^|^FRONTEND_ORIGIN=YOUR_CLOUD_RUN_URL|RECEIPT_TEMP_BUCKET=YOUR_FIREBASE_PROJECT_ID-receipt-temp|DRIVE_SHARED_FOLDER_ID=YOUR_GOOGLE_DRIVE_FOLDER_ID|GEMINI_MODEL=gemini-3.5-flash|GEMINI_MODEL_FALLBACKS=gemini-2.5-flash-lite|GEMINI_FREE_ONLY=false|GEMINI_DEFAULT_MODEL_OPTION=free_gemini35|GEMINI_ALLOWED_MODEL_OPTIONS=free_gemini35,free_gemini25,paid_gemini35,paid_gemini25|GEMINI_ALLOWED_MODELS=gemini-3.5-flash,gemini-2.5-flash,gemini-2.5-flash-lite|GEMINI_MAX_OUTPUT_TOKENS=1536|GEMINI_MAX_RETRIES=1|GEMINI_DISABLE_PAID_FALLBACK=true|GEMINI_ENABLE_PAID_FALLBACK=false'
+      - '--update-secrets'
+      - 'GEMINI_FREE_API_KEY=YOUR_FREE_API_KEY_SECRET_NAME:latest,GEMINI_PAID_API_KEY=YOUR_PAID_API_KEY_SECRET_NAME:latest'
+      - '--remove-env-vars'
+      - 'GEMINI_API_KEY,GOOGLE_API_KEY,GEMINI_MODEL_FALLBACK,GOOGLE_GENAI_USE_VERTEXAI,VERTEXAI_PROJECT,VERTEX_AI_PROJECT'
+      - '--quiet'
+
+images:
+  - 'gcr.io/$PROJECT_ID/kakeibo-web'

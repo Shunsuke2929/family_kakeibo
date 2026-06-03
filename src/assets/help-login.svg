@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f8fbff"/>
+      <stop offset="100%" stop-color="#e8f2fb"/>
+    </linearGradient>
+  </defs>
+  <rect width="1280" height="720" fill="url(#bg)"/>
+  <rect x="180" y="80" width="920" height="560" rx="32" fill="#ffffff" stroke="#d8e5f1"/>
+  <text x="250" y="165" fill="#00a38c" font-size="22" font-family="Yu Gothic" font-weight="700">FAMILY HOUSEHOLD</text>
+  <text x="250" y="220" fill="#162638" font-size="44" font-family="Yu Gothic" font-weight="700">うちの家計簿</text>
+  <text x="250" y="268" fill="#6a7f94" font-size="26" font-family="Yu Gothic">家計簿Webアプリ Ver2.90</text>
+  <rect x="250" y="340" width="360" height="62" rx="31" fill="#ffffff" stroke="#cfdceb"/>
+  <circle cx="292" cy="371" r="18" fill="#ffffff" stroke="#d5dce5"/>
+  <path d="M300 371h-8v-8" fill="none" stroke="#4285f4" stroke-width="6" stroke-linecap="round"/>
+  <path d="M292 363h18" fill="none" stroke="#ea4335" stroke-width="6" stroke-linecap="round"/>
+  <path d="M292 371h18" fill="none" stroke="#fbbc05" stroke-width="6" stroke-linecap="round"/>
+  <path d="M292 379h18" fill="none" stroke="#34a853" stroke-width="6" stroke-linecap="round"/>
+  <text x="330" y="381" fill="#26394d" font-size="26" font-family="Yu Gothic" font-weight="700">Googleでログイン</text>
+  <rect x="250" y="440" width="780" height="120" rx="24" fill="#f5f9fd" stroke="#dbe7f3"/>
+  <text x="285" y="490" fill="#1c3550" font-size="24" font-family="Yu Gothic" font-weight="700">共有家計簿を使う前に</text>
+  <text x="285" y="530" fill="#60758b" font-size="22" font-family="Yu Gothic">駿介・奈々の許可済みGoogleアカウントでログインすると、共有データが読み込まれます。</text>
+</svg>

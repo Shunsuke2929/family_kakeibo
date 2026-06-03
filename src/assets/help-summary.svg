@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="860" viewBox="0 0 1280 860">
+  <defs>
+    <linearGradient id="bg3" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f7fbff"/>
+      <stop offset="100%" stop-color="#ebf3fb"/>
+    </linearGradient>
+  </defs>
+  <rect width="1280" height="860" fill="url(#bg3)"/>
+  <rect x="80" y="50" width="1120" height="760" rx="34" fill="#ffffff" stroke="#d8e4ef"/>
+  <text x="140" y="120" fill="#00a38c" font-size="24" font-family="Yu Gothic" font-weight="700">RECENT 6 MONTHS</text>
+  <text x="140" y="170" fill="#18273a" font-size="40" font-family="Yu Gothic" font-weight="700">一覧・集計・設定</text>
+  <rect x="140" y="220" width="220" height="110" rx="24" fill="#edf5ff" stroke="#cdddf0"/>
+  <text x="175" y="260" fill="#60758b" font-size="20" font-family="Yu Gothic">2026年03月</text>
+  <text x="175" y="308" fill="#18273a" font-size="30" font-family="Yu Gothic" font-weight="700">¥42,580</text>
+  <rect x="380" y="220" width="220" height="110" rx="24" fill="#ffffff" stroke="#d6e1ec"/>
+  <text x="415" y="260" fill="#60758b" font-size="20" font-family="Yu Gothic">2026年02月</text>
+  <text x="415" y="308" fill="#18273a" font-size="30" font-family="Yu Gothic" font-weight="700">¥18,920</text>
+  <rect x="140" y="380" width="980" height="130" rx="24" fill="#fbfdff" stroke="#d8e4ef"/>
+  <text x="175" y="430" fill="#18273a" font-size="28" font-family="Yu Gothic" font-weight="700">一覧タブ</text>
+  <text x="175" y="472" fill="#60758b" font-size="22" font-family="Yu Gothic">上の月カードを押すと、その月だけの支出一覧に絞り込めます。</text>
+  <rect x="140" y="545" width="470" height="180" rx="24" fill="#f6f9fd" stroke="#d8e4ef"/>
+  <text x="175" y="590" fill="#18273a" font-size="28" font-family="Yu Gothic" font-weight="700">集計タブ</text>
+  <text x="175" y="635" fill="#60758b" font-size="22" font-family="Yu Gothic">月別集計、家族カード、代理負担を確認できます。</text>
+  <rect x="650" y="545" width="470" height="180" rx="24" fill="#f6f9fd" stroke="#d8e4ef"/>
+  <text x="685" y="590" fill="#18273a" font-size="28" font-family="Yu Gothic" font-weight="700">設定タブ</text>
+  <text x="685" y="635" fill="#60758b" font-size="22" font-family="Yu Gothic">XLSX出力、カテゴリ管理、アップデート履歴を確認できます。</text>
+</svg>

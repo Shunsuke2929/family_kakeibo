@@ -1,0 +1,1609 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#f2c7d2" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="家計簿" />
+  <title>うちの家計簿 | 家計簿Webアプリ Ver6.32</title>
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" type="image/png" sizes="32x32" href="./src/assets/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="./src/assets/favicon-192.png" />
+    <link rel="apple-touch-icon" href="./src/assets/apple-touch-icon.png" />
+  <link rel="stylesheet" href="./src/css/styles.css" />
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://apis.google.com/js/api.js" async defer></script>
+  <script src="./src/js/config.js"></script>
+  <script src="./src/js/core/domain-constants.js" defer></script>
+  <script src="./src/js/core/money-utils.js" defer></script>
+  <script src="./src/js/core/date-utils.js" defer></script>
+  <script src="./src/js/features/auth.js" defer></script>
+  <script src="./src/js/features/shared-bootstrap.js" defer></script>
+  <script src="./src/js/features/receipt.js" defer></script>
+  <script src="./src/js/features/shared-sync.js" defer></script>
+  <script src="./src/js/features/expense-list.js" defer></script>
+  <script src="./src/js/features/expenses.js" defer></script>
+  <script src="./src/js/features/search.js" defer></script>
+  <script src="./src/js/features/monthly-close.js" defer></script>
+  <script src="./src/js/features/expense-groups.js" defer></script>
+  <script src="./src/js/features/tabs-navigation.js" defer></script>
+  <script src="./src/js/features/summary-detail.js" defer></script>
+  <script src="./src/js/features/home-dashboard.js" defer></script>
+  <script src="./src/js/features/settings-masters.js" defer></script>
+  <script src="./src/js/features/monthly-fixed.js" defer></script>
+  <script src="./src/js/features/update-history.js" defer></script>
+  <script src="./src/js/features/settings.js" defer></script>
+  <script src="./src/js/features/settlement.js" defer></script>
+  <script src="./src/js/app.js" defer></script>
+  <style>
+    .queue-bar{display:flex;align-items:center;gap:6px;padding:6px 0;flex-wrap:wrap;}
+    .queue-label{font-size:.82em;color:#666;}
+    .queue-chip{width:32px;height:32px;border-radius:50%;border:2px solid #ccc;background:#f5f5f5;cursor:pointer;font-size:.8em;font-weight:bold;}
+    .queue-chip.active{border-color:#2f8f57;background:#2f8f57;color:#fff;}
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+        <div class="app-brand">
+          <div class="brand-mark" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <div class="brand-copy">
+            <p id="brandEyebrow" class="eyebrow">うちの家計簿</p>
+          <h1><span id="appTitleLabel">家計簿Webアプリ</span> <span id="appVersionLabel" class="app-version">Ver6.32</span> <button id="reloadLatestDataButton" class="ghost-button compact header-reload-button" type="button">最新読込</button></h1>
+            <div class="header-session-status">
+              <strong id="userName">未ログイン</strong>
+              <span id="userMeta" class="muted"></span>
+              <small id="authInlineStatus" class="inline-status-badge status-idle">接続準備中</small>
+              <button id="logoutButton" class="ghost-button hidden compact header-logout-button" type="button">ログアウト</button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+    <main>
+      <section id="startupView" class="card startup-card">
+        <div class="startup-spinner" aria-hidden="true"></div>
+        <h2>ログイン状態を確認中です</h2>
+        <p class="muted">共有データと一覧を正しく表示するため、Google接続を確認しています。</p>
+      </section>
+
+      <section id="loginView" class="card login-card hidden">
+        <h2>ログイン</h2>
+        <p class="muted">家計の見える化・一覧・検索・Drive連携を表示するには Google 接続が必要です。</p>
+        <div id="googleLoginContainer" class="stack gap-md"></div>
+        <p id="loginMessage" class="message"></p>
+      </section>
+
+      <section id="appView" class="hidden">
+        <nav class="tab-bar card top-tab-bar" aria-label="主要メニュー">
+          <button class="tab-button" type="button" data-tab="home">ホーム</button>
+          <button class="tab-button" type="button" data-tab="summary">集計</button>
+          <button class="tab-button" type="button" data-tab="search">検索</button>
+          <button class="tab-button" type="button" data-tab="transfer">送金</button>
+          <button class="tab-button" type="button" data-tab="child">子供口座</button>
+          <button class="tab-button" type="button" data-tab="settings">設定</button>
+        </nav>
+
+        <section id="tab-home" class="tab-panel home-tab-panel stack gap-md">
+          <section id="topEntryQuickActions" class="quick-entry-strip card" aria-label="すぐ登録">
+            <div class="quick-entry-heading">
+              <div>
+                <p class="eyebrow">ホーム</p>
+                <h2>今日の支出を記録</h2>
+              </div>
+              <p class="quick-entry-description">よく使う3つの登録方法をすぐ選べます。</p>
+            </div>
+            <div class="quick-entry-grid">
+              <button id="quickEntryImageButton" class="quick-entry-button quick-entry-ai" type="button">
+                <span class="quick-entry-icon" aria-hidden="true">写</span>
+                <strong>画像AI登録</strong>
+                <small>撮影・画像選択から</small>
+              </button>
+              <button id="quickEntryTextButton" class="quick-entry-button quick-entry-ai" type="button">
+                <span class="quick-entry-icon" aria-hidden="true">文</span>
+                <strong>テキストAI登録</strong>
+                <small>注文メール本文から</small>
+              </button>
+              <button id="quickEntryManualButton" class="quick-entry-button quick-entry-manual" type="button">
+                <span class="quick-entry-icon" aria-hidden="true">手</span>
+                <strong>手入力登録</strong>
+                <small>そのままフォームへ</small>
+              </button>
+            </div>
+          </section>
+
+          <section id="homeDecisionPanel" class="home-decision-panel" aria-label="ホーム判断カード">
+            <article class="card home-primary-kpi-card">
+              <div class="home-kpi-head">
+                <div>
+                  <p class="eyebrow">今月の家計</p>
+                  <h2>今月のやりくり費</h2>
+                  <p class="home-kpi-scope">食料品・外食費・日用品の家計負担分 (※個人支出は除外、未来日付は含みません)</p>
+                </div>
+                <span id="homeMonthlyKpiStatus" class="status-pill status-idle">集計待ち</span>
+              </div>
+              <div class="home-kpi-value-panel">
+                <span class="home-kpi-value-label">あと使える金額</span>
+                <strong id="homeMonthlyRemainingAmount" class="money-amount home-kpi-main">読込中</strong>
+              </div>
+              <div class="home-kpi-meter dashboard-progress-bar">
+                <span id="homeMonthlyKpiBar" class="tone-good" style="width:0%"></span>
+              </div>
+              <div class="home-kpi-facts">
+                <span>今日までの実績 <strong id="homeMonthlyUsedAmount">読込中</strong></span>
+                <span>予算 <strong id="homeMonthlyBudgetAmount">読込中</strong></span>
+                <span>今日時点の目安 <strong id="homeMonthlyPaceMeta">読込中</strong></span>
+              </div>
+              <p id="homeMonthlyForecastMeta" class="muted small">共有データの読込後に表示します。</p>
+              <div class="home-kpi-actions">
+                <button id="homeMonthlyKpiDetailButton" class="home-kpi-detail-trigger" type="button" data-home-summary-detail="true" data-summary-detail="dashboard-group" data-summary-period="month" data-summary-group-keys="food,dining_out,daily_goods">やりくり費の明細を見る</button>
+              </div>
+            </article>
+            <section id="homeMonthlyMiniProgress" class="home-mini-progress" aria-label="月次ミニ進捗"></section>
+          </section>
+
+          <details id="annualPaceCard" class="card annual-pace-card home-annual-pace-card" aria-label="家計簿チェック">
+            <summary class="annual-pace-summary">
+              <div class="annual-pace-summary-content">
+                <div class="annual-pace-copy">
+                  <p class="eyebrow">家計簿チェック</p>
+                  <h2 id="annualPaceTitle">2026年 家計簿チェック (年初から今日時点の実績)</h2>
+                  <p id="annualPaceFormula" class="muted small">財布ルールと臨時入金から計算します (※未来予定は含みません)。</p>
+                </div>
+                <div class="annual-pace-status-badge">
+                  <small id="annualPaceDeltaStatus" class="annual-pace-delta-status">確認中</small>
+                </div>
+              </div>
+            </summary>
+            <div class="annual-pace-main">
+              <div class="annual-pace-amounts">
+                <div>
+                  <span>本日時点の目安</span>
+                  <strong id="annualPaceExpected">読込中</strong>
+                </div>
+                <div>
+                  <span>使用済み</span>
+                  <strong id="annualPaceActual">読込中</strong>
+                </div>
+                <div class="annual-pace-delta-card">
+                  <span>差額</span>
+                  <strong id="annualPaceDelta">読込中</strong>
+                </div>
+              </div>
+              <button class="annual-pace-major-card summary-detail-card" type="button" data-summary-detail="dashboard-group" data-summary-period="year" data-summary-group-keys="food,dining_out,daily_goods,utilities_home,utility_water" data-summary-title="主要項目合計の明細">
+                <span>主要項目合計</span>
+                <strong id="annualPaceMajorTotal">読込中</strong>
+                <small id="annualPaceMajorMeta">食料品・外食費・日用品・電気・ガス・水道</small>
+                <div class="dashboard-progress-bar annual-pace-major-bar">
+                  <span id="annualPaceMajorBar" class="tone-good" style="width:0%"></span>
+                </div>
+                <span id="annualPaceMajorStatus" class="status-pill status-idle">集計待ち</span>
+              </button>
+              <div class="dashboard-progress-bar annual-pace-bar">
+                <span id="annualPaceBar" class="tone-good" style="width:0%"></span>
+              </div>
+              <p id="annualPaceMeta" class="muted small">共有データの読込後に表示します。</p>
+            </div>
+          </details>
+        </section>
+
+        <section id="tab-entry" class="entry-workspace hidden" aria-hidden="true">
+          <article class="card stack gap-md">
+            <div class="section-title-row">
+              <div>
+                <p class="eyebrow">登録開始</p>
+                <h3>登録開始は最上段から</h3>
+              </div>
+            </div>
+            <p class="section-description">登録方法の選択はファーストビュー最上段に集約しました。画像AI・テキストAI・手入力は、上の3ボタンから直接開けます。</p>
+            <div class="button-row">
+              <button id="backToQuickStartButton" class="ghost-button" type="button">登録開始へ戻る</button>
+            </div>
+          </article>
+
+          <article id="entryAiCard" class="card stack gap-md hidden">
+            <div class="section-title-row">
+              <div>
+                <p class="eyebrow">AIで候補を作成</p>
+                <h3>Gemini で候補を抽出</h3>
+              </div>
+              <button id="clearReceiptButton" class="ghost-button" type="button">入力をクリア</button>
+            </div>
+            <div id="entryAiImageSection" class="stack gap-md">
+              <label class="input-label">レシート画像</label>
+              <div class="button-row receipt-source-actions">
+                <button id="receiptCameraButton" class="secondary-button" type="button">カメラで撮影</button>
+                <button id="receiptFileButton" class="ghost-button" type="button">ファイルから選択</button>
+              </div>
+              <div class="receipt-more-wrap">
+                <button id="receiptMoreToggle" class="ghost-button receipt-more-toggle hidden" type="button">ファイルを追加する</button>
+                <div id="receiptMoreActions" class="button-row receipt-source-actions hidden">
+                  <button id="receiptCameraAddButton" class="secondary-button" type="button">さらに撮影</button>
+                  <button id="receiptFileAddButton" class="ghost-button" type="button">さらに選択</button>
+                </div>
+              </div>
+              <input id="receiptCameraFile" class="hidden" type="file" accept="image/*" capture="environment" />
+              <input id="receiptFile" class="hidden" type="file" accept="image/*,application/pdf,.pdf" multiple />
+              <p class="muted small">画像・PDFは最大3ファイルまで選択できます。選択後、下のボタンで解析と一時保存を開始します。</p>
+              <div id="receiptQueueContainer" class="hidden"></div>
+              <div id="receiptPreviewContainer" class="receipt-preview empty ai-loading-target">
+                <p>画像またはPDFを選択すると、プレビューまたは読込状態が表示されます</p>
+                <img id="receiptPreview" alt="レシートプレビュー" class="hidden" />
+                <div id="receiptAnalyzeOverlay" class="ai-analyze-overlay hidden" aria-hidden="true">
+                  <div class="startup-spinner ai-analyze-spinner" aria-hidden="true"></div>
+                  <strong data-ai-loading-message>レシートを解析中です...</strong>
+                  <small>Gemini が画像から明細候補を読み取っています</small>
+                </div>
+              </div>
+              <div class="button-row center-actions">
+                <button id="aiAnalyzeButton" class="gemini-button" type="button">✦ Gemini AI解析を開始（最大3ファイル）</button>
+              </div>
+              <label class="input-label compact" for="geminiModelOption">
+                AI解析モデル
+                <select id="geminiModelOption">
+                  <option value="free_gemini35" selected>Gemini 3.5 Flash（Free API・推奨）</option>
+                  <option value="free_gemini25">Gemini 2.5 Flash（Free API・軽量）</option>
+                  <optgroup label="有料API（手動選択・課金あり）">
+                    <option value="paid_gemini35">Gemini 3.5 Flash（有料API・課金が発生する可能性があります）</option>
+                    <option value="paid_gemini25">Gemini 2.5 Flash（有料API・課金が発生する可能性があります）</option>
+                  </optgroup>
+                </select>
+              </label>
+              <p id="geminiModelNotice" class="muted small">通常はFree APIを使います。有料APIは必要な時だけ手動選択できます。</p>
+            </div>
+            <div id="entryAiTextSection" class="stack gap-md ai-loading-target">
+              <label class="input-label" for="orderMailText">
+                Amazon / 楽天の注文メール本文
+              </label>
+              <textarea
+                id="orderMailText"
+                class="order-mail-textarea"
+                rows="2"
+                  placeholder="注文確認メール本文をそのまま貼り付けると、AI が購入店・金額・ポイント還元・日付・メモ候補を抽出します。複数商品なら商品別の負担振り分け表も作成します。"
+              ></textarea>
+              <div class="button-row center-actions">
+                <button id="orderMailAnalyzeButton" class="gemini-button" type="button">✦ Gemini AI解析（テキスト）</button>
+              </div>
+              <div id="textAnalyzeOverlay" class="ai-analyze-overlay hidden" aria-hidden="true">
+                <div class="startup-spinner ai-analyze-spinner" aria-hidden="true"></div>
+                <strong data-ai-loading-message>貼り付けテキストを解析中です...</strong>
+                <small>Gemini が注文内容から候補を組み立てています</small>
+              </div>
+            </div>
+            <div id="aiSuggestionBox" class="suggestion-box hidden"></div>
+            <p id="receiptMessage" class="message"></p>
+            <p id="receiptWorkflowStatus" class="receipt-workflow-status hidden"></p>
+            <div id="receiptPendingUploadPanel" class="info-chip block hidden">
+              <span>未処理レシートキュー</span>
+              <strong id="receiptPendingUploadSummary">0件</strong>
+              <small id="receiptPendingUploadMessage">未処理のレシートはありません。</small>
+              <div id="receiptPendingUploadList" class="pending-receipt-upload-list"></div>
+              <div class="button-row">
+                <button id="retryPendingReceiptUploadsButton" class="secondary-button" type="button" disabled>未処理レシートを再送</button>
+              </div>
+            </div>
+          </article>
+
+          <article id="expenseEntryCard" class="card stack gap-md hidden">
+            <div class="section-title-row">
+              <div>
+                <p class="eyebrow">手入力フォーム</p>
+                <h3>支出登録</h3>
+              </div>
+              <div class="button-row wrap">
+                <button id="expenseTemplateLoadButton" class="ghost-button" type="button">テンプレから読み込み</button>
+                <button id="newEntryButton" class="ghost-button" type="button">新規入力</button>
+              </div>
+            </div>
+            <p class="section-description">日々の買い物や利用した支出を登録する画面です。立替で買った場合も、まずはこちらで支出として記録します。</p>
+            <form id="expenseForm" class="stack gap-md" novalidate>
+              <input id="expenseId" type="hidden" />
+              <input id="expenseUpdatedAt" type="hidden" />
+              <div class="form-grid split-mode-header">
+                <label class="input-group">
+                  <span>利用日 *</span>
+                  <input id="date" type="date" required />
+                </label>
+                <div class="split-mode-card">
+                  <span class="split-mode-label">登録モード</span>
+                  <div class="button-row split-mode-actions">
+                    <button id="splitModeToggle" class="ghost-button" type="button">このレシートを分割する</button>
+                    <button id="splitAddLineButton" class="secondary-button hidden" type="button">明細を追加</button>
+                  </div>
+                      <p class="muted small">通常は1件登録のまま、必要なレシートだけ複数明細へ分けて登録できます。画像AIで複数商品を読んだ場合は、まず総額を負担先ごとに振り分けて保存します。</p>
+                  </div>
+                </div>
+
+              <div id="singleEntryFields" class="stack gap-md">
+                <div class="form-grid">
+                  <label class="input-group">
+                    <span>購入店 *</span>
+                    <input id="storeName" type="text" maxlength="100" placeholder="例: イオン" required />
+                  </label>
+                  <label class="input-group">
+                    <span>購入額 *</span>
+                    <input id="amount" type="number" step="1" placeholder="0" required />
+                  </label>
+                  <label class="input-group">
+                    <span>ポイント還元</span>
+                    <input id="pointCredit" type="number" min="0" step="1" placeholder="0" />
+                  </label>
+                  <label class="input-group">
+                    <span>カテゴリ *</span>
+                    <select id="category" required></select>
+                  </label>
+                  <label class="input-group">
+                    <span>支払者 *</span>
+                    <select id="payer" required>
+                      <option value="husband">夫</option>
+                      <option value="wife">妻</option>
+                    </select>
+                  </label>
+                  <label class="input-group">
+                    <span>支払い手段 *</span>
+                    <select id="paymentMethod" required></select>
+                  </label>
+                  <p id="familyCardWarning" class="inline-warning hidden" aria-live="polite"></p>
+                    <label id="otherPaymentWrapper" class="input-group hidden">
+                      <span>その他支払い手段</span>
+                      <select id="otherPaymentMethod"></select>
+                    </label>
+                  <label class="input-group">
+                    <span>負担区分</span>
+                    <select id="personalExpense">
+                      <option value="family">家計費</option>
+                      <option value="husband">夫</option>
+                      <option value="wife">妻</option>
+                      <option value="child">子供</option>
+                    </select>
+                  </label>
+                </div>
+                <label class="template-save-toggle">
+                  <input id="saveAsTemplateCheckbox" type="checkbox" />
+                  <span>この内容を支出テンプレとして保存</span>
+                </label>
+
+                <label class="input-group">
+                  <span>メモ</span>
+                  <textarea id="memo" rows="3" maxlength="2000" placeholder="補足があれば記入"></textarea>
+                </label>
+                <div class="info-chip block">
+                  <span id="netAmountLabel">家計支出額</span>
+                  <strong id="netAmountPreview">¥0</strong>
+                  <small id="pointCreditPreview" class="muted">支出額・ポイント還元・家計支出額を別々に保持します。</small>
+                </div>
+              </div>
+
+                <section id="splitEntrySection" class="split-entry-section stack gap-md hidden">
+                  <div class="split-summary-card">
+                    <div class="form-grid split-summary-grid">
+                      <label class="input-group">
+                        <span>レシート合計</span>
+                        <input id="splitReceiptTotal" type="number" min="0" step="1" placeholder="0" />
+                      </label>
+                      <div class="split-total-grid">
+                        <div class="info-chip">
+                          <span>負担合計</span>
+                          <strong id="splitEntriesTotal">¥0</strong>
+                        </div>
+                        <div class="info-chip">
+                          <span>差額</span>
+                          <strong id="splitDifferenceTotal">¥0</strong>
+                      </div>
+                    </div>
+                    </div>
+                    <p id="splitDifferenceMessage" class="message"></p>
+                    <div id="aiReceiptSummarySection" class="stack gap-md hidden">
+                      <div class="summary-allocation-intro">
+                        <p class="eyebrow">AI Receipt Summary</p>
+                        <h4>レシート総額の負担振り分け</h4>
+                        <p class="muted small">まずは総額が誰負担かを正しく振り分けて保存します。3つの合計がレシート合計と一致したときだけ登録できます。</p>
+                      </div>
+                      <div class="form-grid">
+                        <label class="input-group">
+                          <span>購入店 *</span>
+                          <input id="splitSummaryStoreName" type="text" maxlength="100" placeholder="例: 無印良品" />
+                        </label>
+                        <label class="input-group">
+                          <span>カテゴリ *</span>
+                          <select id="splitSummaryCategory"></select>
+                        </label>
+                        <label class="input-group">
+                          <span>支払者 *</span>
+                          <select id="splitSummaryPayer">
+                            <option value="husband">夫</option>
+                            <option value="wife">妻</option>
+                          </select>
+                        </label>
+                        <label class="input-group">
+                          <span>支払い手段 *</span>
+                          <select id="splitSummaryPaymentMethod"></select>
+                        </label>
+                        <label id="splitSummaryOtherPaymentWrapper" class="input-group hidden">
+                          <span>その他支払い手段</span>
+                          <select id="splitSummaryOtherPaymentMethod"></select>
+                        </label>
+                      </div>
+                      <div class="summary-allocation-grid">
+                        <label class="input-group">
+                          <span>家計負担額（自動計算）</span>
+                          <input id="splitFamilyAmount" type="number" min="0" step="1" placeholder="0" readonly style="background:#f5f5f5;color:#555;" />
+                        </label>
+                        <label class="input-group">
+                          <span>夫負担額</span>
+                          <input id="splitHusbandAmount" type="number" min="0" step="1" placeholder="0" />
+                        </label>
+                        <label class="input-group">
+                          <span>妻負担額</span>
+                          <input id="splitWifeAmount" type="number" min="0" step="1" placeholder="0" />
+                        </label>
+                      </div>
+                      <p id="splitSummaryMessage" class="message"></p>
+                      <label class="input-group">
+                        <span>メモ</span>
+                        <textarea id="splitSummaryMemo" rows="3" maxlength="2000" placeholder="按分理由や補足を自由記載"></textarea>
+                      </label>
+                    </div>
+                  </div>
+                  <div id="splitEntryList" class="split-entry-list"></div>
+                </section>
+
+              <div class="linked-info-grid">
+                <div class="info-chip">
+                  <span>画像URL</span>
+                  <small id="receiptUrlLabel">未保存</small>
+                </div>
+                <div class="info-chip">
+                  <span>ファイルID</span>
+                  <small id="receiptFileIdLabel">未保存</small>
+                </div>
+              </div>
+              <div id="receiptAttachSection" class="info-chip block receipt-attach-section hidden">
+                <span>レシート画像を後から追加</span>
+                <small>画像またはPDFをCloud Storageへ保存し、保存ボタンでこの支出に反映します。AI再解析は行いません。</small>
+                <div class="button-row">
+                  <button id="editReceiptFileButton" class="secondary-button compact" type="button">画像/PDFを追加</button>
+                </div>
+                <input id="editReceiptFile" class="hidden" type="file" accept="image/*,application/pdf,.pdf" multiple />
+                <div id="receiptAssetList" class="receipt-asset-list"></div>
+              </div>
+
+              <div class="button-row sticky-actions center-actions">
+                <button id="expenseSaveButton" class="primary-button" type="submit">保存</button>
+                <button id="deleteEntryButton" class="danger-button hidden" type="button">削除</button>
+              </div>
+            </form>
+            <p id="formMessage" class="message"></p>
+          </article>
+        </section>
+
+        <section id="tab-summary" class="tab-panel stack gap-md hidden">
+          <article class="card stack gap-md summary-control-card">
+            <div class="section-title-row tight">
+              <div>
+                <p class="eyebrow">集計の表示切替</p>
+                <h3>月次集計 / 年次集計 / 精算レポートβ</h3>
+                <p class="section-description">見たい単位に合わせて月次集計・年次集計・精算レポートβを切り替え、その画面に必要な対象期間だけを表示します。</p>
+              </div>
+            </div>
+            <div class="summary-mode-switch" role="tablist" aria-label="集計表示切替">
+              <button id="summaryModeMonthlyButton" class="summary-mode-button active" type="button" role="tab" aria-selected="true">月次集計</button>
+              <button id="summaryModeYearlyButton" class="summary-mode-button" type="button" role="tab" aria-selected="false">年次集計</button>
+              <button id="summaryModeSettlementButton" class="summary-mode-button" type="button" role="tab" aria-selected="false">精算レポートβ</button>
+            </div>
+            <div id="summaryMonthlyControls" class="summary-control-bar">
+              <label class="input-group summary-filter">
+                <span>対象月</span>
+                <input id="summaryMonth" type="month" />
+              </label>
+              <div class="button-row wrap summary-control-actions">
+                <button id="summaryCurrentMonthButton" class="ghost-button compact" type="button">今月へ戻す</button>
+              </div>
+            </div>
+            <div id="summaryYearlyControls" class="summary-control-bar hidden">
+              <label class="input-group summary-filter">
+                <span>対象年</span>
+                <select id="summaryYear"></select>
+              </label>
+              <div class="button-row wrap summary-control-actions">
+                <button id="summaryCurrentYearButton" class="ghost-button compact" type="button">今年へ戻す</button>
+              </div>
+            </div>
+            <div id="summarySettlementControls" class="summary-control-bar hidden">
+              <label class="input-group summary-filter">
+                <span>対象年</span>
+                <select id="summarySettlementYear"></select>
+              </label>
+              <div class="button-row wrap summary-control-actions">
+                <button id="summarySettlementCurrentYearButton" class="ghost-button compact" type="button">今年へ戻す</button>
+              </div>
+            </div>
+          </article>
+
+          <article id="summaryDataStatus" class="card dashboard-warning-box subtle hidden">
+            <div class="section-title-row tight">
+              <div>
+                <p class="eyebrow">共有データ</p>
+                <h4>読込状態</h4>
+              </div>
+              <button id="summaryDataRetryButton" class="ghost-button compact hidden" type="button">再読み込み</button>
+            </div>
+            <p id="summaryDataStatusMessage" class="muted small">共有データの状態をここに表示します。</p>
+          </article>
+
+          <div id="summaryMonthlyPanel" class="stack gap-md">
+          <article class="card stack gap-md summary-feature-card dashboard-shell">
+            <div class="section-title-row tight">
+              <div>
+                <p class="eyebrow">今月どうするか</p>
+                <h3>家計の見える化 (やりくり費主要3項目)</h3>
+                <p class="section-description">食料品・外食費・日用品の家計負担分だけを日割り目安で確認します (※個人支出は除外、当月の登録済み実績ベース)。</p>
+              </div>
+              <button id="dashboardBudgetOpenButton" class="ghost-button compact" type="button">予算策定</button>
+            </div>
+
+            <div class="dashboard-monthly-visual">
+              <button class="summary-card accent-a dashboard-kpi-card dashboard-visual-card summary-detail-card" type="button" data-summary-detail="dashboard-group" data-summary-period="month" data-summary-group-keys="food,dining_out,daily_goods" data-summary-title="食料品・外食費・日用品の明細">
+                <span>食料品＋外食費＋日用品 (当月の登録済み実績 / 未来日付含む)</span>
+                <strong id="dashboardCoreMonthlyTotal">¥0</strong>
+                <small id="dashboardCoreMonthlyMeta">食料品・外食費・日用品の予算は ¥0</small>
+                <div class="dashboard-progress-bar dashboard-main-progress"><span id="dashboardCoreMonthlyBar" class="tone-good" style="width:0%"></span></div>
+                <span id="dashboardCoreMonthlyStatus" class="status-pill status-idle">集計待ち</span>
+              </button>
+              <button class="summary-card accent-b dashboard-kpi-card summary-detail-card" type="button" data-summary-detail="dashboard-group" data-summary-period="month" data-summary-group-keys="food,dining_out,daily_goods" data-summary-title="今月のやりくり費明細">
+                <span>今月の着地見込み (今日までの実績ペースからの予測)</span>
+                <strong id="dashboardForecastTotal">¥0</strong>
+                <small id="dashboardForecastMeta">今のペースから今月の着地を計算します</small>
+                <span id="dashboardForecastStatus" class="status-pill status-idle">集計待ち</span>
+              </button>
+              <button class="summary-card accent-c dashboard-kpi-card summary-detail-card" type="button" data-summary-detail="dashboard-group" data-summary-period="month" data-summary-group-keys="food,dining_out,daily_goods" data-summary-title="日割り差の対象明細">
+                <span>日割りとの差 (未来日付を除く今日までの実績と目安 of 比較)</span>
+                <strong id="dashboardOverallLabel">準備中</strong>
+                <small id="dashboardOverallMeta">本日時点の目安との差を表示します</small>
+                <small id="dashboardOverallCause" class="muted">内訳は下のカードで確認します</small>
+                <span id="dashboardOverallStatus" class="status-pill status-idle">確認前</span>
+              </button>
+            </div>
+
+            <section class="stack gap-sm">
+              <div class="section-title-row tight">
+                <div>
+                  <p class="eyebrow">今月気にする費目</p>
+                  <h4>食料品・外食費・日用品の進み具合 (当月の登録済み実績 / 未来日付含む)</h4>
+                </div>
+              </div>
+              <p class="section-description compact">家賃や光熱費は含めず、月の途中で調整しやすい家計負担分だけを見ています。</p>
+              <div id="dashboardCoreCategoryProgress" class="dashboard-progress-grid"></div>
+            </section>
+
+            <details class="dashboard-optional-details hidden" aria-hidden="true">
+              <summary>
+                <div>
+                  <p class="eyebrow">請求確定後の確認</p>
+                  <h4>固定費・参考実績</h4>
+                </div>
+              </summary>
+              <div class="stack gap-sm">
+              <div class="section-title-row tight">
+                <div>
+                  <p class="eyebrow">毎月の参考確認</p>
+                  <h4>固定費・参考実績 (請求確定後に確認する費目 / 月中調整対象外)</h4>
+                </div>
+              </div>
+              <p class="section-description compact">家賃・通信費・光熱費・水道・ガソリン・医療費・車ローンは、月中に抑え込むというより請求確定後に確認する費目としてまとめています。</p>
+              <div id="dashboardReferenceCategoryProgress" class="dashboard-reference-grid"></div>
+              </div>
+            </details>
+
+          </article>
+          <article class="card stack gap-md summary-feature-card hidden" aria-hidden="true">
+            <div class="section-title-row tight">
+              <div>
+                <p class="eyebrow">今月の家計</p>
+                <h3>月別集計</h3>
+                <p class="muted small">ここでは personalExpense = family の支出だけを集計しています。</p>
+              </div>
+            </div>
+            <div class="summary-cards">
+              <button class="summary-card accent-a summary-detail-card" type="button" data-summary-detail="monthly-total">
+                <span>家計費 月合計 (固定費を含む当月の家計支出合計)</span>
+                <strong id="summaryTotal">¥0</strong>
+              </button>
+              <button class="summary-card accent-b summary-detail-card" type="button" data-summary-detail="monthly-payer" data-summary-payer="husband">
+                <span>夫支払い (当月の登録済み実績 / 未来日付含む)</span>
+                <strong id="summaryHusband">¥0</strong>
+              </button>
+              <button class="summary-card accent-c summary-detail-card" type="button" data-summary-detail="monthly-payer" data-summary-payer="wife">
+                <span>妻支払い (当月の登録済み実績 / 未来日付含む)</span>
+                <strong id="summaryWife">¥0</strong>
+              </button>
+              <button class="summary-card accent-d summary-detail-card" type="button" data-summary-detail="monthly-family-card">
+                <span>家族カード (当月の登録済み実績 / 未来日付含む)</span>
+                <strong id="summaryFamilyCard">¥0</strong>
+              </button>
+            </div>
+          </article>
+          <div id="categorySummary" class="summary-list hidden" aria-hidden="true"></div>
+
+          <article id="monthlyCloseSection" class="card stack gap-md hidden" aria-hidden="true">
+            <div class="section-title-row tight">
+              <div>
+                <p class="eyebrow">月末の確認</p>
+                <h4>月次クローズ</h4>
+                <p id="monthlyCloseSummary" class="muted small">対象月の未処理キューとメモを確認して、締めの記録を残せます。</p>
+              </div>
+              <span id="monthlyCloseStatusLabel" class="status-pill status-idle">未クローズ</span>
+            </div>
+            <div class="dashboard-warning-box subtle monthly-close-queue-box">
+              <strong>未処理キュー</strong>
+              <p id="monthlyCloseQueueSummary" class="muted small">カテゴリ確認 0件 / 予算未接続 0件 / 精算確認 不要</p>
+              <div id="monthlyCloseQueueList" class="monthly-close-queue-list"></div>
+              <div class="button-row wrap">
+                <button id="monthlyCloseSearchIssuesButton" class="ghost-button compact" type="button">検索タブで確認</button>
+                <button id="monthlyCloseSettlementButton" class="ghost-button compact" type="button">年次集計で精算確認</button>
+              </div>
+            </div>
+            <div class="form-grid">
+              <label class="input-group">
+                <span>今月の想定外支出</span>
+                <textarea id="monthlyCloseUnexpectedItems" rows="3" maxlength="2000" placeholder="例: 医療費が想定より多かった"></textarea>
+              </label>
+              <label class="input-group">
+                <span>来月変えること</span>
+                <textarea id="monthlyCloseNextMonthActions" rows="3" maxlength="2000" placeholder="例: 外食回数を減らす、固定費候補を先に作る"></textarea>
+              </label>
+            </div>
+            <label class="input-group">
+              <span>持ち越しメモ</span>
+              <textarea id="monthlyCloseCarryoverNotes" rows="3" maxlength="2000" placeholder="例: 来月の保育園準備費、未処理の立替確認"></textarea>
+            </label>
+            <div class="info-chip block">
+              <span>記録するスナップショット</span>
+              <small id="monthlyCloseSnapshotSummary">やりくり費・着地見込み・年の特別費・精算目安を保存時に記録します。</small>
+            </div>
+            <div class="button-row wrap">
+              <button id="monthlyCloseSaveButton" class="primary-button" type="button">この月を締める</button>
+              <button id="monthlyCloseReopenButton" class="ghost-button compact hidden" type="button">締め記録を解除</button>
+            </div>
+            <p id="monthlyCloseMessage" class="message"></p>
+          </article>
+          </div>
+
+          <div id="summaryYearlyPanel" class="stack gap-md hidden">
+          <article class="card stack gap-md summary-feature-card dashboard-shell">
+            <section class="stack gap-sm">
+              <div class="section-title-row tight">
+                <div>
+                  <p class="eyebrow">毎月費目の年間進捗</p>
+                  <h4>主要費目と月予算グループ of 累計 (年初からの実績)</h4>
+                </div>
+              </div>
+              <p class="section-description compact">食料品・外食費・日用品・電気・ガス・水道は経過日数ベースの目安と比較し、それ以外（固定費等）は使いすぎ判定を行わず「年間の累計支払額」として表示します。</p>
+              <div id="dashboardAnnualMonthlyCategoryProgress" class="dashboard-yearly-monthly-stack">
+                <div id="dashboardAnnualMonthlyFocusProgress" class="dashboard-progress-grid"></div>
+                <div id="dashboardAnnualMonthlyReferenceProgress" class="dashboard-reference-grid"></div>
+                <div id="dashboardAnnualMonthlyTotalProgress" class="dashboard-reference-grid"></div>
+              </div>
+            </section>
+
+            <section class="stack gap-sm">
+              <div class="section-title-row tight">
+                <div>
+                  <p class="eyebrow">年枠の年間進捗</p>
+                  <h4>今年の特別費の進み具合 (年間枠での進捗)</h4>
+                </div>
+              </div>
+              <p class="section-description compact">年次予算グループ（特別費や大型支出）は、月次では追わず「年間予算枠」に対する実績として進捗を確認します。</p>
+              <div id="dashboardAnnualCategoryProgress" class="dashboard-progress-grid"></div>
+            </section>
+
+          </article>
+
+          <article class="card stack gap-md summary-feature-card">
+            <div class="section-title-row tight">
+              <div>
+                <p class="eyebrow">今年の家計</p>
+                <h3>年別集計</h3>
+                <p class="muted small">ここでは personalExpense = family の支出だけを集計しています。</p>
+              </div>
+            </div>
+              <div class="summary-cards yearly-summary-cards">
+                <button class="summary-card accent-a yearly-total-card summary-detail-card" type="button" data-summary-detail="yearly-total">
+                  <span>家計費 当年合計</span>
+                  <strong id="summaryYearlyTotal">¥0</strong>
+                  <small id="summaryYearlyTotalFormula">夫支払い + 妻支払い</small>
+                </button>
+              <button class="summary-card accent-b summary-detail-card" type="button" data-summary-detail="yearly-payer" data-summary-payer="husband">
+                <span>夫支払い 当年</span>
+                <strong id="summaryYearlyHusband">¥0</strong>
+              </button>
+              <button class="summary-card accent-c summary-detail-card" type="button" data-summary-detail="yearly-payer" data-summary-payer="wife">
+                <span>妻支払い 当年</span>
+                <strong id="summaryYearlyWife">¥0</strong>
+              </button>
+                <button class="summary-card accent-d summary-detail-card" type="button" data-summary-detail="yearly-family-card">
+                  <span>家族カード 当年（参考）</span>
+                  <strong id="summaryYearlyFamilyCard">¥0</strong>
+                  <small>支払者集計の内訳確認用です</small>
+                </button>
+                <button class="summary-card accent-a summary-detail-card" type="button" data-summary-detail="yearly-income">
+                  <span>家計への臨時入金 当年</span>
+                  <strong id="summaryYearlyTemporaryIncome">¥0</strong>
+                </button>
+              </div>
+              <div id="summaryYearlyFormulaBar" class="yearly-formula-bar">
+                <span id="summaryYearlyFormulaHusband">夫 ¥0</span>
+                <strong>+</strong>
+                <span id="summaryYearlyFormulaWife">妻 ¥0</span>
+                <strong>=</strong>
+                <span id="summaryYearlyFormulaTotal">合計 ¥0</span>
+                <span id="summaryYearlyFormulaIncome">臨時入金（予算側） ¥0</span>
+              </div>
+            </article>
+
+          <article class="card stack gap-sm">
+            <div class="section-title-row tight">
+              <div>
+                <p class="eyebrow">対象年の12か月</p>
+                <h3>主要項目 月次内訳</h3>
+              </div>
+            </div>
+            <div id="listRecentMonthsSummary" class="mini-summary-row"></div>
+          </article>
+
+          <details id="dashboardUnassignedDetails" class="card stack gap-sm dashboard-unassigned-details">
+            <summary class="dashboard-unassigned-summary">
+              <div>
+                <p class="eyebrow">分類の確認</p>
+                <h4 id="dashboardUnassignedTitle">未割当カテゴリはありません</h4>
+                <p id="dashboardUnassignedSummary" class="muted small">対象年の family 支出は、月予算・年次予算・別枠グループのいずれかに割り当てられています。</p>
+              </div>
+            </summary>
+            <div id="dashboardUnassignedWarning" class="dashboard-warning-box">
+              <p id="dashboardUnassignedMessage" class="muted small">やりくり費や特別費に入っていないカテゴリは、この欄に表示されます。</p>
+              <div id="dashboardUnassignedList" class="dashboard-unassigned-list"></div>
+              <div id="dashboardUnassignedActions" class="button-row wrap hidden">
+                <button id="dashboardUnassignedSearchButton" class="ghost-button compact" type="button">検索タブで確認</button>
+                <button id="dashboardUnassignedSettingsButton" class="ghost-button compact" type="button">設定タブで確認</button>
+              </div>
+            </div>
+          </details>
+
+          </div>
+
+          <div id="summarySettlementPanel" class="stack gap-md hidden">
+            <article class="card stack gap-md">
+              <div class="section-title-row tight">
+                <div>
+                  <p class="eyebrow">精算レポートβ</p>
+                  <h4>家計費プールと個人間貸借</h4>
+                </div>
+              </div>
+              <p id="summarySettlementSummary" class="muted small">精算レポートを集計します。</p>
+              <p id="summarySettlementActionMessage" class="message"></p>
+              <div id="summarySettlementCards" class="summary-cards settlement-summary-cards"></div>
+              <div id="summarySettlementReport" class="settlement-report-table"></div>
+            </article>
+          </div>
+        </section>
+
+        <section id="tab-search" class="tab-panel stack gap-md hidden">
+          <article class="card stack gap-md">
+            <div class="section-title-row">
+              <div>
+                <p class="eyebrow">条件から探す</p>
+                <h3>条件検索</h3>
+              </div>
+            </div>
+            <div class="form-grid">
+              <label class="input-group">
+                <span>キーワード</span>
+                <input id="filterKeyword" type="text" placeholder="店名・メモ・補助情報を部分一致" />
+              </label>
+              <label class="input-group">
+                <span>開始日</span>
+                <input id="filterStartDate" type="date" />
+              </label>
+              <label class="input-group">
+                <span>終了日</span>
+                <input id="filterEndDate" type="date" />
+              </label>
+              <label class="input-group">
+                <span>購入店</span>
+                <input id="filterStore" type="text" placeholder="部分一致" />
+              </label>
+              <label class="input-group">
+                <span>カテゴリ</span>
+                <select id="filterCategory"></select>
+              </label>
+              <label class="input-group">
+                <span>支払者</span>
+                <select id="filterPayer">
+                  <option value="">すべて</option>
+                  <option value="husband">夫</option>
+                  <option value="wife">妻</option>
+                </select>
+              </label>
+              <label class="input-group">
+                <span>支払い手段</span>
+                <select id="filterPaymentMethod"></select>
+              </label>
+              <label class="input-group">
+                <span>家族カード</span>
+                <select id="filterFamilyCard">
+                  <option value="">すべて</option>
+                  <option value="true">はい</option>
+                  <option value="false">いいえ</option>
+                </select>
+              </label>
+            </div>
+            <article class="dashboard-warning-box subtle search-integrity-box">
+              <div class="section-title-row tight">
+                <div>
+                  <p class="eyebrow">整合チェック</p>
+                  <h4>カテゴリ不整合スキャン</h4>
+                </div>
+                <button id="categoryIntegrityScanButton" class="ghost-button compact" type="button">再スキャン</button>
+              </div>
+              <div id="categoryIntegrityScanStatus" class="search-integrity-status muted small" aria-live="polite"></div>
+              <div id="categoryIntegrityScanSummary" class="search-integrity-summary"></div>
+              <div id="categoryIntegrityScanResults" class="search-integrity-list"></div>
+            </article>
+            <div id="searchResultInfo" class="muted search-result-info"></div>
+            <div id="searchResults" class="expense-list"></div>
+          </article>
+        </section>
+
+        <section id="tab-transfer" class="tab-panel stack gap-md hidden">
+          <article class="card stack gap-md">
+            <div class="section-title-row">
+              <div>
+                <p class="eyebrow">Transfers</p>
+                <h3>送金</h3>
+              </div>
+            </div>
+            <p class="section-description">買い物の登録ではなく、お金の移動を記録する画面です。私費の貸し借りと、家計費プールの財布間移動は分けて登録します。</p>
+            <div id="transferYearSummary" class="mini-summary-grid"></div>
+            <form id="transferForm" class="stack gap-md">
+              <input id="transferId" type="hidden" />
+              <input id="transferUpdatedAt" type="hidden" />
+              <div class="form-grid">
+                <label class="input-group">
+                  <span>日付 *</span>
+                  <input id="transferDate" type="date" required />
+                </label>
+                <label class="input-group">
+                  <span>種別 *</span>
+                  <select id="transferType" required>
+                    <option value="transfer">送金</option>
+                  </select>
+                </label>
+                <label class="input-group">
+                  <span>送金の扱い *</span>
+                  <select id="transferSettlementScope" required>
+                    <option value="private_lending">個人間貸借</option>
+                    <option value="household_pool">家計費プール移動</option>
+                  </select>
+                  <small class="muted">家計費収支へ入れるのは「家計費プール移動」だけです。</small>
+                </label>
+                <label class="input-group">
+                  <span>送金元 *</span>
+                  <select id="transferFromPerson" required>
+                    <option value="husband">夫</option>
+                    <option value="wife">妻</option>
+                  </select>
+                </label>
+                <label class="input-group">
+                  <span>送金先 *</span>
+                  <select id="transferToPerson" required>
+                    <option value="wife">妻</option>
+                    <option value="husband">夫</option>
+                  </select>
+                </label>
+                <label class="input-group">
+                  <span>金額 *</span>
+                  <input id="transferAmount" type="number" min="1" step="1" placeholder="0" required />
+                </label>
+              </div>
+              <label class="input-group">
+                <span>メモ</span>
+                <textarea id="transferMemo" rows="3" maxlength="2000" placeholder="例: PayPayで送金、立て替え分の戻し"></textarea>
+              </label>
+              <div class="button-row center-actions">
+                <button class="primary-button" type="submit">送金を保存</button>
+                <button id="transferDeleteButton" class="danger-button hidden" type="button">削除</button>
+              </div>
+            </form>
+            <p id="transferMessage" class="message"></p>
+          </article>
+
+          <article class="card stack gap-md">
+            <div class="section-title-row">
+              <div>
+                <p class="eyebrow">Household Income</p>
+                <h3>家計への臨時入金</h3>
+              </div>
+            </div>
+            <p class="section-description">売却益、返金、補助金など、家計へ戻すべき臨時の入金を記録します。支出のマイナス登録にはせず、精算レポートの家計プールへ反映します。</p>
+            <form id="householdIncomeForm" class="stack gap-md">
+              <input id="householdIncomeId" type="hidden" />
+              <input id="householdIncomeUpdatedAt" type="hidden" />
+              <div class="form-grid">
+                <label class="input-group">
+                  <span>日付 *</span>
+                  <input id="householdIncomeDate" type="date" required />
+                </label>
+                <label class="input-group">
+                  <span>入金種別 *</span>
+                  <select id="householdIncomeKind" required>
+                    <option value="sale_profit">売却益</option>
+                    <option value="refund">返金</option>
+                    <option value="subsidy">補助金</option>
+                    <option value="other">その他入金</option>
+                  </select>
+                </label>
+                <label class="input-group">
+                  <span>入金元・内容 *</span>
+                  <input id="householdIncomeSourceName" type="text" maxlength="100" placeholder="例: メルカリ売却" required />
+                </label>
+                <label class="input-group">
+                  <span>いま預かっている人 *</span>
+                  <select id="householdIncomeHolder" required>
+                    <option value="husband">夫</option>
+                    <option value="wife">妻</option>
+                  </select>
+                </label>
+                <label class="input-group">
+                  <span>金額 *</span>
+                  <input id="householdIncomeAmount" type="number" min="1" step="1" placeholder="0" required />
+                </label>
+              </div>
+              <label class="input-group">
+                <span>メモ</span>
+                <textarea id="householdIncomeMemo" rows="3" maxlength="2000" placeholder="例: ベビー用品の売却益を家計へ戻す"></textarea>
+              </label>
+              <div class="button-row center-actions">
+                <button class="primary-button" type="submit">臨時入金を保存</button>
+                <button id="householdIncomeDeleteButton" class="danger-button hidden" type="button">削除</button>
+              </div>
+            </form>
+            <p id="householdIncomeMessage" class="message"></p>
+          </article>
+
+          <article class="card stack gap-md">
+            <div class="section-title-row">
+              <div>
+                <p class="eyebrow">送金の記録</p>
+                <h3>送金履歴</h3>
+              </div>
+            </div>
+            <div class="form-grid compact-filter-grid">
+              <label class="input-group">
+                <span>開始月</span>
+                <input id="transferFilterStartMonth" type="month" autocomplete="off" />
+              </label>
+              <label class="input-group">
+                <span>終了月</span>
+                <input id="transferFilterEndMonth" type="month" autocomplete="off" />
+              </label>
+            </div>
+            <small id="transferFilterSummary" class="muted">全期間を表示しています。</small>
+            <div id="transferList" class="expense-list"></div>
+          </article>
+
+          <article class="card stack gap-md">
+            <div class="section-title-row">
+              <div>
+                <p class="eyebrow">家計へ戻した記録</p>
+                <h3>家計への臨時入金履歴</h3>
+              </div>
+            </div>
+            <div class="form-grid compact-filter-grid">
+              <label class="input-group">
+                <span>開始月</span>
+                <input id="householdIncomeFilterStartMonth" type="month" autocomplete="off" />
+              </label>
+              <label class="input-group">
+                <span>終了月</span>
+                <input id="householdIncomeFilterEndMonth" type="month" autocomplete="off" />
+              </label>
+            </div>
+            <small id="householdIncomeFilterSummary" class="muted">全期間を表示しています。</small>
+            <div id="householdIncomeList" class="expense-list"></div>
+          </article>
+        </section>
+
+        <section id="tab-child" class="tab-panel stack gap-md hidden">
+          <article class="card stack gap-md">
+            <div class="section-title-row">
+              <div>
+                <p class="eyebrow">Child Wallet</p>
+                  <h3>子供口座</h3>
+              </div>
+            </div>
+            <p class="section-description">子供へのお祝い金・お年玉などの入金と、子供口座からの支出を記録する画面です</p>
+            <div class="info-chip child-wallet-chip">
+              <span>子供財布の総額</span>
+              <strong id="childWalletTotal">¥0</strong>
+              <small id="childWalletHolderSummary" class="muted">夫預かり ¥0 / 妻預かり ¥0</small>
+            </div>
+            <form id="childForm" class="stack gap-md">
+              <input id="childTransactionId" type="hidden" />
+              <input id="childUpdatedAt" type="hidden" />
+              <div class="form-grid">
+                <label class="input-group">
+                  <span>日付 *</span>
+                  <input id="childDate" type="date" required />
+                </label>
+                <label class="input-group">
+                  <span>種別 *</span>
+                  <select id="childKind" required>
+                    <option value="gift">お祝い金</option>
+                    <option value="otoshidama">お年玉</option>
+                    <option value="deposit">入金</option>
+                    <option value="expense">支出</option>
+                    <option value="return_gift">半返し</option>
+                  </select>
+                </label>
+                <label class="input-group">
+                  <span>相手・出どころ / 使途 *</span>
+                  <input id="childSourceOrFrom" type="text" maxlength="100" placeholder="例: 芦屋のおじいちゃん / 矢復費用" required />
+                </label>
+                <label class="input-group">
+                  <span>預かり者 *</span>
+                  <select id="childHolder" required>
+                    <option value="husband">夫</option>
+                    <option value="wife">妻</option>
+                  </select>
+                </label>
+                <label class="input-group">
+                  <span>金額 *</span>
+                  <input id="childAmount" type="number" step="1" placeholder="0" required />
+                </label>
+              </div>
+              <label class="input-group">
+                <span>メモ</span>
+                <textarea id="childMemo" rows="3" maxlength="2000" placeholder="例: 子供への出産祝い、半返し対応"></textarea>
+              </label>
+              <div class="button-row center-actions">
+                <button class="primary-button" type="submit">子供口座を保存</button>
+                <button id="childDeleteButton" class="danger-button hidden" type="button">削除</button>
+              </div>
+            </form>
+            <p id="childMessage" class="message"></p>
+          </article>
+
+          <article class="card stack gap-md">
+            <div class="section-title-row">
+              <div>
+                <p class="eyebrow">子供口座の記録</p>
+                <h3>子供口座履歴</h3>
+              </div>
+            </div>
+            <div class="form-grid compact-filter-grid">
+              <label class="input-group">
+                <span>開始月</span>
+                <input id="childFilterStartMonth" type="month" autocomplete="off" />
+              </label>
+              <label class="input-group">
+                <span>終了月</span>
+                <input id="childFilterEndMonth" type="month" autocomplete="off" />
+              </label>
+            </div>
+            <small id="childFilterSummary" class="muted">全期間を表示しています。</small>
+            <div id="childTransactionList" class="expense-list"></div>
+          </article>
+        </section>
+
+        <section id="tab-settings" class="tab-panel stack gap-md hidden">
+          <details class="card settings-accordion settings-section-masters">
+            <summary class="settings-accordion-summary">
+              <div>
+                <p class="eyebrow">Masters</p>
+                <h3>カテゴリ・支払い手段</h3>
+              </div>
+            </summary>
+            <div class="settings-accordion-body stack gap-md">
+              <p class="muted small">カテゴリと支払い手段は household 共有設定です。普段はカテゴリ名と支払い手段だけを見て、必要な時だけ詳細を確認できます。</p>
+              <div class="settings-grid settings-master-panels-grid">
+              <article class="card stack gap-md settings-master-panel-card">
+              <div class="settings-master-panel">
+                <div class="section-title-row tight">
+                  <h4>カテゴリ</h4>
+                  <button id="addCategoryButton" class="ghost-button" type="button">追加</button>
+                </div>
+                <div id="categoryMasterList" class="pill-list"></div>
+                <p class="muted small">普段はカテゴリ名を中心に表示し、必要な時だけ詳細をまとめて開けます。カテゴリコードは予算や固定費テンプレとのひも付けに使われます。</p>
+                <div class="button-row">
+                  <button id="categoryMasterMetaToggle" class="ghost-button compact" type="button" aria-expanded="false">カテゴリ詳細をまとめて表示</button>
+                </div>
+                <div id="categoryMasterMetaList" class="category-meta-list"></div>
+              </div>
+              </article>
+              <article class="card stack gap-md settings-master-panel-card">
+              <div class="settings-master-panel payment-master-panel">
+                <div class="section-title-row tight">
+                  <h4>支払い手段</h4>
+                </div>
+                <div class="stack gap-md payment-master-block">
+                  <div id="paymentMethodMasterList" class="pill-list"></div>
+                </div>
+                <div class="stack gap-md settings-subpanel payment-master-block">
+                  <div class="section-title-row tight">
+                    <h4>その他支払い手段</h4>
+                    <button id="addOtherPaymentMethodButton" class="ghost-button" type="button">追加</button>
+                  </div>
+                  <div id="otherPaymentMethodMasterList" class="pill-list"></div>
+                  <p class="muted small">既定候補は現金・PayPay・楽天ペイです。必要な支払い方法だけ設定画面から追加できます。</p>
+                </div>
+              </div>
+              </article>
+            </div>
+            </div>
+          </details>
+
+          <details class="card settings-accordion settings-section-settlement">
+            <summary class="settings-accordion-summary">
+              <div>
+                <p class="eyebrow">Settlement</p>
+                <h3>家計財布ルール</h3>
+              </div>
+            </summary>
+            <div class="settings-accordion-body stack gap-md">
+            <p class="muted small">毎月拠出、賞与月の追加拠出、家族カードの持ち主、年初の家計プール残高を household 共有設定で管理します。</p>
+            <div class="settings-grid settlement-settings-grid">
+              <div class="settings-master-panel">
+                <div class="section-title-row tight">
+                  <h4>毎月拠出</h4>
+                </div>
+                <div class="form-grid compact-filter-grid">
+                  <label class="input-group">
+                    <span>夫</span>
+                    <input id="settlementMonthlyHusband" type="number" min="0" step="1000" placeholder="0" />
+                  </label>
+                  <label class="input-group">
+                    <span>妻</span>
+                    <input id="settlementMonthlyWife" type="number" min="0" step="1000" placeholder="0" />
+                  </label>
+                </div>
+              </div>
+              <div class="settings-master-panel">
+                <div class="section-title-row tight">
+                  <h4>賞与月の追加拠出</h4>
+                </div>
+                <div class="form-grid compact-filter-grid">
+                  <label class="input-group">
+                    <span>夫 6月</span>
+                    <input id="settlementBonusHusband06" type="number" min="0" step="1000" placeholder="0" />
+                  </label>
+                  <label class="input-group">
+                    <span>夫 12月</span>
+                    <input id="settlementBonusHusband12" type="number" min="0" step="1000" placeholder="0" />
+                  </label>
+                  <label class="input-group">
+                    <span>妻 6月</span>
+                    <input id="settlementBonusWife06" type="number" min="0" step="1000" placeholder="0" />
+                  </label>
+                  <label class="input-group">
+                    <span>妻 12月</span>
+                    <input id="settlementBonusWife12" type="number" min="0" step="1000" placeholder="0" />
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div class="settings-grid settlement-settings-grid">
+              <label class="input-group">
+                <span>家族カードの持ち主</span>
+                <select id="settlementFamilyCardOwner">
+                  <option value="husband">夫</option>
+                  <option value="wife">妻</option>
+                </select>
+              </label>
+              <label class="toggle-row settlement-toggle-row">
+                <input id="settlementIncludeTransfers" type="checkbox" />
+                <span>家計費プール移動を家計費プール残高へ反映する</span>
+              </label>
+            </div>
+            <label class="input-group">
+              <span>メモ</span>
+              <textarea id="settlementNotes" rows="3" maxlength="2000" placeholder="例: 6月・12月は賞与から家計財布へ追加拠出"></textarea>
+            </label>
+            <div class="stack gap-md">
+              <div class="section-title-row tight">
+                <div>
+                  <h4>月別の目標拠出 上書き</h4>
+                  <p class="muted small">通常の 13万円 / 賞与月設定とは別に、その月だけ金額を変えたい時に使います。入力した月は、精算レポートβでこちらを優先します。</p>
+                </div>
+                <button id="addSettlementOverrideButton" class="ghost-button compact" type="button">月を追加</button>
+              </div>
+              <div id="settlementOverrideOverview" class="settlement-overview-grid"></div>
+              <div id="settlementOverrideList" class="settlement-override-list"></div>
+            </div>
+            <div class="stack gap-md">
+              <div class="section-title-row tight">
+                <div>
+                  <h4>家計プールの年初残高</h4>
+                  <p class="muted small">前年から持ち越した家計費が、年初時点でどちらの財布にいくら残っているかを入れます。精算レポートβでは、この残高に総拠出額・臨時収入・実際の支払い・家計費プール移動を重ねて、今年の最終残高を計算します。個人間貸借は別枠で確認します。</p>
+                </div>
+                <button id="addHouseholdPoolOpeningBalanceButton" class="ghost-button compact" type="button">年を追加</button>
+              </div>
+              <label class="input-group compact">
+                <span>対象年</span>
+                <select id="householdPoolOpeningBalanceYear"></select>
+              </label>
+              <div id="householdPoolOpeningBalanceList" class="settlement-override-list"></div>
+            </div>
+            <div class="button-row">
+              <button id="settlementRulesSaveButton" class="primary-button" type="button">家計財布ルールを保存</button>
+            </div>
+            <p id="settlementRulesMessage" class="message"></p>
+            </div>
+          </details>
+
+          <details class="card settings-accordion settings-section-monthly-fixed">
+            <summary class="settings-accordion-summary">
+              <div>
+                <p class="eyebrow">Monthly Fixed</p>
+                <h3>月次定常費</h3>
+              </div>
+            </summary>
+            <div class="settings-accordion-body stack gap-md">
+              <p class="muted small">家賃・ローン・光熱費・通信費など、毎月決まって引き落とされる項目を登録・一括支出保存できます。</p>
+              
+              <div class="stack gap-md">
+                <div class="section-title-row tight">
+                  <h4>月次定常費の一覧</h4>
+                  <button id="addMonthlyFixedButton" class="ghost-button" type="button">追加</button>
+                </div>
+                <p id="monthlyFixedStatusSummary" class="muted small"></p>
+                <div id="monthlyFixedList" class="stack gap-md recurring-template-list"></div>
+                <div class="button-row">
+                  <button id="saveMonthlyFixedButton" class="primary-button" type="button">定常費の設定を保存</button>
+                </div>
+                <p id="monthlyFixedMessage" class="message"></p>
+              </div>
+
+              <hr class="divider" />
+
+              <div class="stack gap-md">
+                <div class="section-title-row tight">
+                  <h4>今月の未登録分をまとめて登録</h4>
+                  <p class="muted small">当月の既存支出と照合し、まだ登録されていない定常費を自動検出します。選択して一括登録できます。</p>
+                </div>
+                <div class="form-grid compact-filter-grid">
+                  <label class="input-group">
+                    <span>対象月</span>
+                    <input id="monthlyFixedCandidateMonth" type="month" />
+                  </label>
+                </div>
+                <div class="button-row">
+                  <button id="monthlyFixedGenerateButton" class="primary-button" type="button">未登録分を確認</button>
+                </div>
+                <p id="monthlyFixedCandidateSummary" class="muted small"></p>
+                <div id="monthlyFixedCandidateList" class="stack gap-md recurring-template-list"></div>
+                <div class="button-row">
+                  <button id="monthlyFixedCandidateSaveButton" class="primary-button" type="button" disabled>選択した項目を登録</button>
+                </div>
+                <p id="monthlyFixedCandidateMessage" class="message"></p>
+              </div>
+            </div>
+          </details>
+
+          <details class="card settings-accordion settings-section-export">
+            <summary class="settings-accordion-summary">
+              <div>
+                <p class="eyebrow">Export</p>
+                <h3>XLSX出力</h3>
+              </div>
+            </summary>
+            <div class="settings-accordion-body stack gap-md">
+            <p class="muted small">支出・送金・子供口座をまとめて Excel取込用XLSX として出力します。</p>
+            <div class="form-grid">
+              <label class="input-group">
+                <span>出力対象年</span>
+                <select id="exportYear"></select>
+              </label>
+            </div>
+            <div class="button-row">
+              <button id="exportSettingsButton" class="primary-button" type="button">Excel取込用XLSXを出力</button>
+              <button id="exportZipButton" class="primary-button" type="button">全データCSV ZIPを出力</button>
+            </div>
+            <p id="exportMessage" class="message"></p>
+            </div>
+          </details>
+
+          <details class="card settings-accordion settings-section-integration">
+            <summary class="settings-accordion-summary">
+              <div>
+                <p class="eyebrow">Integration</p>
+                <h3>Google連携設定</h3>
+              </div>
+            </summary>
+            <div class="settings-accordion-body stack gap-md">
+            <div class="integration-grid status-card-grid">
+              <div class="info-chip block">
+                <span>Google接続</span>
+                <small id="googleAuthStatusLabel">確認前</small>
+              </div>
+              <div class="info-chip block">
+                <span>Drive接続</span>
+                <small id="driveAuthStatusLabel">確認前</small>
+              </div>
+              <div class="info-chip block">
+                <span>許可アカウント</span>
+                <small>夫 (your-email@example.com) / 妻 (partner-email@example.com)</small>
+              </div>
+              <div class="info-chip block">
+                <span>Drive保存先フォルダ</span>
+                <small id="driveFolderLabel">未設定</small>
+              </div>
+            </div>
+            <div class="stack gap-md">
+              <p class="muted small">通常のレシート画像は、まず Cloud Storage に安全保存します。Drive へ残したい時は、この設定画面からユーザーOAuthで一括同期してください。</p>
+              <div class="button-row">
+                <button id="driveFolderPickButton" class="ghost-button" type="button">保存先を再設定</button>
+                <button id="driveFolderClearButton" class="ghost-button compact" type="button">設定をクリア</button>
+              </div>
+              <div class="info-chip block">
+                <span>レシートDrive反映</span>
+                <small id="driveReceiptSyncSummary">未反映レシートのDrive同期、既存ファイル名整理、および最新Firestoreバックアップ（Managed Export, 可読JSON, フルCSV8枚を内包する3層構造ZIP）の同日上書き同期を実行できます。</small>
+              </div>
+              <div class="button-row">
+                <button id="driveReceiptSyncButton" class="primary-button" type="button">Google Driveへ一括同期</button>
+              </div>
+              <p id="driveReceiptSyncMessage" class="message"></p>
+              <div class="info-chip block">
+                <span>接続状況メモ</span>
+                <small id="driveHealthMessage">Drive は必要になった時か設定画面で確認します。</small>
+              </div>
+              <p id="driveFolderMessage" class="message"></p>
+            </div>
+            <p class="muted small">同期後は一覧・検索のレシート画像リンクを Drive のリンクへ更新し、Drive 側のファイル名も最新ルールへ整えます。Cloud Storage 側の一時保管画像は60日で自動削除する運用です。</p>
+            </div>
+          </details>
+
+          <details class="card settings-accordion settings-section-notifications">
+            <summary class="settings-accordion-summary">
+              <div>
+                <p class="eyebrow">通知</p>
+                <h3>PWA通知設定</h3>
+              </div>
+            </summary>
+            <div class="settings-accordion-body stack gap-md">
+            <div class="integration-grid status-card-grid">
+              <div class="info-chip block">
+                <span>端末対応</span>
+                <small id="pushSupportLabel">確認前</small>
+              </div>
+              <div class="info-chip block">
+                <span>通知権限</span>
+                <small id="pushPermissionLabel">未確認</small>
+              </div>
+              <div class="info-chip block">
+                <span>購読状態</span>
+                <small id="pushSubscriptionLabel">未登録</small>
+              </div>
+            </div>
+            <div class="stack gap-md">
+              <p class="muted small">支出・送金・子供口座の登録/削除を、この端末のPWAへ通知できます。iPhone は Safari で開いたホーム画面アプリから有効化してください。</p>
+              <div class="button-row">
+                <button id="enablePushButton" class="primary-button" type="button">PWA通知を有効化</button>
+                <button id="disablePushButton" class="ghost-button compact" type="button">通知を解除</button>
+              </div>
+              <div class="info-chip block">
+                <span>通知メモ</span>
+                <small id="pushStatusMessage">通知はまだ有効化されていません。</small>
+              </div>
+            </div>
+            </div>
+          </details>
+
+          <details class="card settings-accordion settings-section-import">
+            <summary class="settings-accordion-summary">
+              <div>
+                <p class="eyebrow">Import / Export</p>
+                <h3>JSONインポート</h3>
+              </div>
+            </summary>
+            <div class="settings-accordion-body stack gap-md">
+            <label class="input-group">
+              <span>取込用JSONファイル</span>
+              <input id="importJsonFile" type="file" accept=".json,application/json" />
+            </label>
+            <div class="button-row">
+              <button id="importJsonButton" class="primary-button" type="button">JSONを追加取り込み</button>
+            </div>
+            <div class="integration-grid">
+              <div class="info-chip block">
+                <span>取込予定件数</span>
+                <small id="importPreviewSummary">ファイルを選ぶと件数を表示します。</small>
+              </div>
+              <div class="info-chip block">
+                <span>補足</span>
+                <small>expenses / transfers / childTransactions / householdIncomes を追加取り込みします。needs_review と skipped_candidates は保存しません。</small>
+              </div>
+            </div>
+            <p id="importMessage" class="message"></p>
+            </div>
+          </details>
+
+          <details class="card settings-accordion settings-section-history">
+            <summary class="settings-accordion-summary">
+              <div>
+                <p class="eyebrow">更新履歴</p>
+                <h3>アップデート履歴</h3>
+              </div>
+            </summary>
+            <div class="settings-accordion-body stack gap-md">
+            <div id="updateHistoryList" class="update-history-list">
+              <p class="muted small">更新履歴を読み込んでいます...</p>
+            </div>
+            </div>
+          </details>
+        </section>
+    </main>
+  </div>
+  <div id="expenseEditModal" class="modal-backdrop hidden" aria-hidden="true">
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="expenseEditModalTitle">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow">支出編集</p>
+          <h3 id="expenseEditModalTitle">支出を編集</h3>
+        </div>
+        <button id="expenseEditModalClose" class="ghost-button compact" type="button">閉じる</button>
+      </div>
+      <div id="expenseEditModalContent" class="modal-content"></div>
+    </div>
+  </div>
+  <div id="expenseGroupEditModal" class="modal-backdrop hidden" aria-hidden="true">
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="expenseGroupEditModalTitle">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow">Split Edit</p>
+          <h3 id="expenseGroupEditModalTitle">分割レシートをまとめて編集</h3>
+        </div>
+        <div class="button-row">
+          <button id="expenseGroupEditModalClose" class="ghost-button compact" type="button">閉じる</button>
+          <button id="expenseGroupEditSaveButton" class="primary-button compact" type="button">まとめて保存</button>
+        </div>
+      </div>
+      <div id="expenseGroupEditModalContent" class="modal-content"></div>
+    </div>
+  </div>
+  <div id="crossBurdenModal" class="modal-backdrop hidden" aria-hidden="true">
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="crossBurdenModalTitle">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow">代理負担明細</p>
+          <h3 id="crossBurdenModalTitle">代理負担の明細</h3>
+        </div>
+        <button id="crossBurdenModalClose" class="ghost-button compact" type="button">閉じる</button>
+      </div>
+      <div class="modal-content stack gap-md">
+        <p id="crossBurdenModalSummary" class="muted small"></p>
+        <div id="crossBurdenDetailList" class="expense-list"></div>
+      </div>
+    </div>
+  </div>
+  <div id="entryFlowModal" class="modal-backdrop hidden" aria-hidden="true">
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="entryFlowModalTitle">
+      <div class="modal-header">
+        <div>
+          <p id="entryFlowModalEyebrow" class="eyebrow">登録開始</p>
+          <h3 id="entryFlowModalTitle">支出登録</h3>
+        </div>
+        <button id="entryFlowModalClose" class="ghost-button compact" type="button">閉じる</button>
+      </div>
+      <div id="entryFlowModalContent" class="modal-content stack gap-md"></div>
+    </div>
+  </div>
+  <div id="expenseTemplateModal" class="modal-backdrop hidden" aria-hidden="true">
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="expenseTemplateModalTitle">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow">Template</p>
+          <h3 id="expenseTemplateModalTitle">支出テンプレから読み込み</h3>
+        </div>
+        <button id="expenseTemplateModalClose" class="ghost-button compact" type="button">閉じる</button>
+      </div>
+      <div class="modal-content stack gap-md">
+        <div class="expense-template-month-control">
+          <div>
+            <p class="muted small">選んだテンプレを入力画面へ反映します。利用日は現在の入力値を維持します。</p>
+            <p class="muted small">登録状況を確認する月はここで切り替えられます。</p>
+          </div>
+          <label class="input-group compact">
+            <span>確認月</span>
+            <input id="expenseTemplateStatusMonth" type="month" />
+          </label>
+        </div>
+        <div id="expenseTemplateList" class="expense-template-list"></div>
+        <p id="expenseTemplateMessage" class="message"></p>
+      </div>
+    </div>
+  </div>
+  <div id="dashboardBudgetModal" class="modal-backdrop hidden" aria-hidden="true">
+    <div class="modal-dialog dashboard-budget-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="dashboardBudgetModalTitle">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow">Budget Planning</p>
+          <h3 id="dashboardBudgetModalTitle">予算策定</h3>
+          <p class="muted small">ここで設定した予算は、月をまたいで共通で使います。月ごとの上書きが必要になったら、次工程で月別例外を追加できます。</p>
+        </div>
+        <button id="dashboardBudgetModalClose" class="ghost-button compact" type="button">閉じる</button>
+      </div>
+      <div class="modal-content stack gap-md">
+        <section class="stack gap-md dashboard-budget-config">
+          <div class="dashboard-budget-sections">
+            <div class="dashboard-budget-section">
+              <div class="section-title-row tight">
+                <div>
+                  <p class="eyebrow">月予算</p>
+                  <h5>毎月の予算</h5>
+                </div>
+              </div>
+              <div id="dashboardBudgetMonthlyGroupList" class="dashboard-budget-grid"></div>
+              <div class="info-chip dashboard-budget-total">
+                <span>月予算 合計</span>
+                <strong id="dashboardBudgetCoreTotal">¥0</strong>
+                <small class="muted">毎月の予算の合計</small>
+              </div>
+              <p id="dashboardBudgetNote" class="muted small dashboard-budget-note">日用品は子供日常費を含む前提です。車ローンは契約返済額に合わせて、あとから手入力で上書きできます。</p>
+            </div>
+            <div class="dashboard-budget-section">
+              <div class="section-title-row tight">
+                <div>
+                  <p class="eyebrow">年枠</p>
+                  <h5>年の特別費予算</h5>
+                </div>
+              </div>
+              <div id="dashboardBudgetAnnualGroupList" class="dashboard-budget-grid"></div>
+              <div class="info-chip dashboard-budget-total">
+                <span>年予算 合計</span>
+                <strong id="dashboardBudgetAnnualTotal">¥0</strong>
+                <small class="muted">通常の年枠KPIに含める予算の合計</small>
+              </div>
+            </div>
+          </div>
+          <div class="button-row dashboard-budget-actions">
+            <button id="dashboardBudgetSaveButton" class="primary-button" type="button">共有設定を保存</button>
+            <button id="dashboardBudgetModalCancel" class="ghost-button compact" type="button">閉じる</button>
+          </div>
+          <p id="dashboardBudgetMessage" class="message"></p>
+        </section>
+      </div>
+    </div>
+  </div>
+  <div id="aiErrorModal" class="modal-backdrop hidden" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-compact" role="dialog" aria-modal="true" aria-labelledby="aiErrorModalTitle">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow">AI解析エラー</p>
+          <h3 id="aiErrorModalTitle">解析に失敗しました</h3>
+        </div>
+        <button id="aiErrorModalClose" class="ghost-button compact" type="button">閉じる</button>
+      </div>
+      <div class="modal-content stack gap-md">
+        <p id="aiErrorMessage" class="message modal-message"></p>
+        <p class="muted small">別の画像を選び直すか、手入力で登録を進めることもできます。</p>
+        <p class="muted small">画像が保存済みなら、手入力で登録しても画像は支出に残ります。</p>
+      </div>
+    </div>
+  </div>
+  <div id="syncToast" class="sync-toast hidden" role="status" aria-live="polite"></div>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>

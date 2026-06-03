@@ -1,0 +1,21 @@
+{
+  "name": "うちの家計簿",
+  "short_name": "家計簿",
+  "description": "夫と妻の家族向け家計簿Webアプリ",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#4a90e2",
+  "background_color": "#ffffff",
+  "lang": "ja",
+  "icons": [
+    {
+      "src": "/src/assets/favicon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

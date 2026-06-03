@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="twa_status_bar_color">#F2C7D2</color>
+    <color name="twa_navigation_bar_color">#FFF8FB</color>
+    <color name="twa_navigation_divider_color">#E6D7DC</color>
+    <color name="launcher_background">#FCEEF4</color>
+    <color name="launcher_foreground">#C86D92</color>
+    <color name="launcher_foreground_secondary">#FFFFFF</color>
+</resources>
