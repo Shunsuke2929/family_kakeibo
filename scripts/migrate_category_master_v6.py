@@ -16,8 +16,9 @@ from typing import Any
 
 
 PROJECT_ID = "YOUR_FIREBASE_PROJECT_ID"
-HOUSEHOLD_ID = "shunwife-home"
-GCLOUD_PATH = r"C:\Program Files (x86)\Google\Cloud SDK\google-cloud-sdk\bin\gcloud.cmd"
+HOUSEHOLD_ID = "YOUR_HOUSEHOLD_ID"
+GCLOUD_PATH = "gcloud"
+
 ROOT_DIR = Path(__file__).resolve().parents[1]
 REPORT_DIR = ROOT_DIR / "reports"
 
