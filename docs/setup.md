@@ -88,7 +88,7 @@ window.APP_CONFIG = {
     // レシート画像・バックアップファイルを格納する Google Drive フォルダのオーナーメールアドレス
     folderOwnerEmail: "your-email@example.com",
     // 画面上に表示するフォルダパスのラベル
-    folderPathLabel: "マイドライブ/家計簿バックアップ/レシート",
+    folderPathLabel: "Google Drive/My Family Kakeibo/Receipts",
     // Google Drive フォルダの ID (ブラウザでそのフォルダを開いた時の URL 末尾の英数字)
     folderId: "YOUR_GOOGLE_DRIVE_FOLDER_ID",
     scopes: [ ... ],
@@ -100,6 +100,12 @@ window.APP_CONFIG = {
   },
 };
 ```
+
+> [!IMPORTANT]
+> - Google Drive の保存先フォルダ名やパス（`folderPathLabel`）は任意です。ご自身の Google Drive 上で任意のフォルダを作成し、その folder ID を設定してください。
+> - `folderPathLabel` は UI 上に表示される視覚的なラベルに過ぎず、アクセス認可や保存先フォルダ自体の正本ではありません。
+> - 実際の同期保存先は `folderId`（およびバックエンドの `DRIVE_SHARED_FOLDER_ID`）で指定された Google Drive folder ID になります。
+
 
 ### 5.2 バックエンド設定 (`.env`)
 `.env.example` からコピーして `.env` を作成します。

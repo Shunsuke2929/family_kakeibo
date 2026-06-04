@@ -108,7 +108,7 @@ window.APP_CONFIG = {
   },
   drive: {
     folderOwnerEmail: "your-email@example.com",
-    folderPathLabel: "マイドライブ/06_家計簿アプリ/レシート",
+    folderPathLabel: "Google Drive/My Family Kakeibo/Receipts",
     folderId: "YOUR_GOOGLE_DRIVE_FOLDER_ID",
     scopes: ["https://www.googleapis.com/auth/drive.file"],
   },
@@ -138,10 +138,11 @@ OAuth 同意画面のテストユーザーに以下を登録します。
 
 ### Google Drive
 
-保存先フォルダは以下です。
+保存先フォルダ名・パスは任意です。ご自身の Google Drive 上で任意のフォルダを作成し、その folder ID を設定してください。
+（`folderPathLabel` は UI 上に表示する視覚的ラベルに過ぎず、実際の同期保存先はフォルダ ID で識別されます）
 
 - オーナー: `your-email@example.com`
-- パス: `マイドライブ/06_家計簿アプリ/レシート`
+- フォルダパス表示ラベル (UI用): `Google Drive/My Family Kakeibo/Receipts` (または任意のパス表示文字列)
 - フォルダID: `YOUR_GOOGLE_DRIVE_FOLDER_ID`
 
 ### Gemini API
