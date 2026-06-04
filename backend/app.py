@@ -168,7 +168,7 @@ DEFAULT_ALLOWED_EMAILS = {
     "your-email@example.com",
     "partner-email@example.com",
 }
-DEFAULT_HOUSEHOLD_ID = "shunwife-home"
+DEFAULT_HOUSEHOLD_ID = "YOUR_HOUSEHOLD_ID"
 FIRESTORE_COLLECTIONS = {
     "expenses": "expenses",
     "transfers": "transfers",
