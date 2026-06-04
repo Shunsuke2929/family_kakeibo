@@ -45,6 +45,7 @@ outputs/
 *.lock
 
 # Build configuration
+cloudbuild.yaml
 android/local.properties
 android/.gradle/
 android/app/build/

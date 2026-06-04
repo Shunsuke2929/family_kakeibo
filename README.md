@@ -58,50 +58,58 @@
 
 ## 公開方法
 
-この構成は `Cloud Run 1サービス` で公開できます。Cloud Run が以下の両方を担当します。
+本アプリケーションは、GCP (Google Cloud Platform) および Firebase 上にセルフホストして利用するテンプレートです。
 
-- `GET /`
-  - 家計簿Webアプリの画面配信
-- `POST /api/receipt/analyze`
-  - Gemini を呼ぶサーバーレスAPI
-- `POST /api/receipt/intake`
-  - レシート原本を Cloud Storage 一時退避バケットへ保存
-- `GET /api/receipt/assets/<assetId>`
-  - Cloud Storage 保存済みレシートを、ログイン済みユーザーだけが確認・Drive同期用に取得
+### 1. ローカル設定ファイルの作成
 
-### 1. Cloud Run にデプロイする
+セキュリティ確保のため、個人データや認証情報を含む設定ファイルは本リポジトリの追跡対象から外されています（`.gitignore` に登録済み）。デプロイまたはローカルテストの前に、以下のテンプレートから実設定ファイルをコピーして作成してください。
 
-プロジェクトルートで次を実行します。
+```bash
+# フロントエンド設定ファイルの作成
+cp src/js/config.example.js src/js/config.js
+
+# バックエンド環境変数の作成
+cp .env.example .env
+
+# デプロイ用構成ファイルの作成
+cp cloudbuild.yaml.example cloudbuild.yaml
+```
+
+> [!WARNING]
+> 作成した `src/js/config.js`、`.env`、および `cloudbuild.yaml` は個人用の本番設定、シークレット、およびアクセス権情報を含むため、**絶対に公開リポジトリへコミットしないでください**。これらはローカル/本番環境ごとの生成物として扱われます。
+
+### 2. 環境変数の設定 (GCP / Firebase)
+
+作成した `.env` および `cloudbuild.yaml` の各種プレースホルダーを環境に合わせて編集します。
+
+- `FRONTEND_ORIGIN`: デプロイされた本番フロントエンドのドメイン（例: `https://your-app-xxxx.a.run.app`）。
+- `HOUSEHOLD_ID`: Firestore上の世帯データを論理的に分離するためのドキュメント ID（例: `demo-household`）。
+  > [!IMPORTANT]
+  > バックエンド（`backend/app.py`）のデフォルト値は `YOUR_HOUSEHOLD_ID` です。セルフホストで利用する場合は、衝突を避けるために必ず独自の `HOUSEHOLD_ID` を明示的に設定してください。
+- `RECEIPT_TEMP_BUCKET`: レシート画像の一時保管用に用意した Cloud Storage (GCS) のバケット名。
+- `DRIVE_SHARED_FOLDER_ID`: レシート原本やデータバックアップを同期保存する Google Drive フォルダのフォルダ ID（URLの最後のランダムな文字列）。
+
+### 3. Cloud Run へのデプロイ
+
+バックエンド API および静的画面配信は、単一の Cloud Run サービスとして動作します。
+作成した `cloudbuild.yaml` をご自身の環境の値に編集後、以下のコマンドで Cloud Build 経由でデプロイを実行します。
 
 ```powershell
 gcloud config list
+# Cloud Build 経由でデプロイを実行
 CLOUDSDK_PYTHON="python" `
-gcloud `
-  builds submit --config cloudbuild.yaml --project YOUR_FIREBASE_PROJECT_ID .
+gcloud builds submit --config cloudbuild.yaml --project YOUR_GCP_PROJECT_ID .
 ```
 
-補足:
-- 正式デプロイは `cloudbuild.yaml` 経由です
-- `gcloud run deploy --source .` は現行運用では使いません
-- Cloud Run 環境変数は既存設定を引き継ぎます
-- `RECEIPT_TEMP_BUCKET` にレシート保管用バケット名を設定します
-- Drive 反映は設定画面のボタンからユーザーOAuthで実行します。Cloud Run サービスアカウントによるDrive反映は通常導線では使いません
+### 4. config.js を本番URLに合わせる
 
-Cloud Run URL の例:
-
-```text
-https://YOUR_CLOUD_RUN_URL
-```
-
-### 2. config.js を本番URLに合わせる
-
-[src/js/config.js](src/js/config.js) を確認します。
+デプロイ完了時に取得される本番サービス URL を、作成した `src/js/config.js` 内に反映します。
 
 ```js
 window.APP_CONFIG = {
   auth: {
     allowedEmails: ["your-email@example.com", "partner-email@example.com"],
-    googleClientId: "YOUR_GOOGLE_CLIENT_ID",
+    googleClientId: "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com",
   },
   app: {
     frontendOrigin: "https://YOUR_CLOUD_RUN_URL",
