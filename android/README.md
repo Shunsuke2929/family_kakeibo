@@ -84,7 +84,7 @@ Set-Location android
 
 `app > Variant: debug / release` の `SHA-256` を確認して、[/.well-known/assetlinks.json](.well-known/assetlinks.json) の該当 fingerprint と差し替えます。
 
-## Pixel 10 Pro で優先確認すること
+## Android端末 で優先確認すること
 
 1. アプリ起動
 2. Google ログイン
